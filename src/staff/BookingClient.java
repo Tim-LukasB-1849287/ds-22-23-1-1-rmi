@@ -13,7 +13,7 @@ public class BookingClient extends AbstractScriptedSimpleTest {
 	private Manager bmStub = null;
 
 	public static void main(String[] args) throws Exception {
-
+		System.setProperty("java.rmi.server.hostname", "localhost");
 		BookingClient client = new BookingClient();
 		client.run();
 	}
@@ -35,18 +35,38 @@ public class BookingClient extends AbstractScriptedSimpleTest {
 
 	@Override
 	public boolean isRoomAvailable(Integer roomNumber, LocalDate date) {
-		//Implement this method
-		return true;
+		try {
+			return bmStub.isRoomAvailable(roomNumber, date);
+
+		} catch (RemoteException e) {
+			System.err.println("Exception: " + e.toString());
+			e.printStackTrace();
+		}
+		System.err.println("Is room available failed.");
+
+		return false;
 	}
 
 	@Override
 	public void addBooking(BookingDetail bookingDetail) throws Exception {
-		//Implement this method
+		try {
+			bmStub.addBooking(bookingDetail);
+
+		} catch (RemoteException e) {
+			System.err.println("Exception: " + e.toString());
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	public Set<Integer> getAvailableRooms(LocalDate date) {
-		//Implement this method
+		try {
+			return bmStub.getAvailableRooms(date);
+
+		} catch (RemoteException e) {
+			System.err.println("Exception: " + e.toString());
+			e.printStackTrace();
+		}
 		return null;
 	}
 

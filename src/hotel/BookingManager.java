@@ -6,10 +6,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class BookingManager implements Manager {
 
@@ -30,7 +27,13 @@ public class BookingManager implements Manager {
 
 	public boolean isRoomAvailable(Integer roomNumber, LocalDate date) {
 		//implement this method
-
+		Iterable<Room> roomIterator = Arrays.asList(rooms);
+		for (Room room : roomIterator) {
+			if (room.getRoomNumber().equals(roomNumber)){
+				return room.isAvailable(date);
+			}
+		}
+		// Maybe throw exception room non-existent
 		return false;
 	}
 
@@ -48,12 +51,15 @@ public class BookingManager implements Manager {
 	}
 
 	public Set<Integer> getAvailableRooms(LocalDate date) {
+		Set<Integer> availableRooms =  new HashSet<Integer>();
 		//implement this method
 		Iterable<Room> roomIterator = Arrays.asList(rooms);
 		for (Room room : roomIterator) {
-			room.isAvailable(date);
+			if (room.isAvailable(date)){
+				availableRooms.add(room.getRoomNumber());
+			}
 		}
-		return null;
+		return availableRooms;
 	}
 
 	private static Room[] initializeRooms() {
@@ -67,6 +73,8 @@ public class BookingManager implements Manager {
 
 	public static void main(String[] args) {
 		try {
+			System.setProperty("java.rmi.server.hostname","localhost");
+			LocateRegistry.createRegistry(8080);
 			BookingManager obj = new BookingManager();
 			Manager stub = (Manager) UnicastRemoteObject.exportObject(obj, 0);
 
