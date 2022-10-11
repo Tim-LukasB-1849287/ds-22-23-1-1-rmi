@@ -16,7 +16,7 @@
 	   The third parameter is filename for the final zip.	   
     ******************************************************** -->
   <property name="main.client" value="staff.BookingClient" />
-  <property name="main.server" value="" />
+  <property name="main.server" value="hotel.BookingManager" />
   <property name="zip.filename" value="rmi" />
   <!--
     ********************************************************
@@ -85,4 +85,5 @@
   
   <target name="run" depends="compile,registry.start,run.both,registry.stop"/>
   <target name="run-wo-compile" depends="registry.start,run.both,registry.stop" />
+  <target name="run-wo-registry" depends="compile,run.both" />
 </project>

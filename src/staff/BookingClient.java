@@ -13,7 +13,7 @@ public class BookingClient extends AbstractScriptedSimpleTest {
 	private Manager bmStub = null;
 
 	public static void main(String[] args) throws Exception {
-		System.setProperty("java.rmi.server.hostname", "localhost");
+//		System.setProperty("java.rmi.server.hostname", "localhost");
 		BookingClient client = new BookingClient();
 		client.run();
 	}
@@ -26,7 +26,7 @@ public class BookingClient extends AbstractScriptedSimpleTest {
 			String host = null;
 			//Look up the registered remote instance
 //			bm = new BookingManager();
-			Registry registry = LocateRegistry.getRegistry(host);
+			Registry registry = LocateRegistry.getRegistry();
 			bmStub = (Manager) registry.lookup("Manager");
 		} catch (Exception exp) {
 			exp.printStackTrace();

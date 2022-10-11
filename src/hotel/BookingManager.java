@@ -73,8 +73,9 @@ public class BookingManager implements Manager {
 
 	public static void main(String[] args) {
 		try {
-			System.setProperty("java.rmi.server.hostname","localhost");
-			LocateRegistry.createRegistry(8080);
+			System.setSecurityManager(null);
+//System.setProperty("java.rmi.server.hostname","localhost");
+//			LocateRegistry.createRegistry(8080);
 			BookingManager obj = new BookingManager();
 			Manager stub = (Manager) UnicastRemoteObject.exportObject(obj, 0);
 
