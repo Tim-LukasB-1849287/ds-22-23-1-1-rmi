@@ -35,7 +35,7 @@ public class BookingManager implements Manager {
         return allRooms;
     }
 
-    public boolean isRoomAvailable(Integer roomNumber, LocalDate date) {
+    public boolean isRoomAvailable(Integer roomNumber, LocalDate date) throws RoomNonExistentException {
         logger.log(Level.INFO, "Checking availability for room with roomnumber {0} and for the date {1}", new Object[]{roomNumber, date});
         Iterable<Room> roomIterator = Arrays.asList(rooms);
         for (Room room : roomIterator) {
@@ -44,19 +44,23 @@ public class BookingManager implements Manager {
             }
         }
         // Maybe throw exception room non-existent
-        return false;
+        throw new RoomNonExistentException(String.format("Room Non existent with number %d", roomNumber));
     }
 
 
-    public void addBooking(BookingDetail bookingDetail) {
+    public void addBooking(BookingDetail bookingDetail) throws RemoteException {
         Integer roomNum = bookingDetail.getRoomNumber();
         logger.log(Level.INFO, "Adding a booking for room with number {0}", new Object[]{roomNum});
         Iterable<Room> roomIterator = Arrays.asList(rooms);
         for (Room room : roomIterator) {
             if (room.getRoomNumber().equals(roomNum)) {
-                List<BookingDetail> bookings = room.getBookings();
-                bookings.add(bookingDetail);
-                room.setBookings(bookings);
+                if (room.isAvailable(bookingDetail.getDate())) {
+                    List<BookingDetail> bookings = room.getBookings();
+                    bookings.add(bookingDetail);
+                    room.setBookings(bookings);
+                } else {
+                    throw new RoomUnavailableException(String.format("Room  with number %d is not available", room.getRoomNumber()));
+                }
             }
         }
     }
@@ -84,8 +88,6 @@ public class BookingManager implements Manager {
     }
 
     public static void main(String[] args) {
-        if (System.getSecurityManager() != null)
-            System.setSecurityManager(null);
         try {
 //          System.setProperty("java.rmi.server.hostname","localhost");
 //			LocateRegistry.createRegistry(8080);
@@ -98,6 +100,7 @@ public class BookingManager implements Manager {
 
             } catch (RemoteException e) {
                 logger.log(Level.SEVERE, "Could not locate RMI registry.");
+                e.printStackTrace();
                 System.exit(-1);
             }
 
