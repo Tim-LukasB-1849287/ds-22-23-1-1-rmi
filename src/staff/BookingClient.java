@@ -1,17 +1,17 @@
 package staff;
 
+import hotel.BookingDetail;
+
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.time.LocalDate;
 import java.util.Set;
 
-import hotel.BookingDetail;
-
 public class BookingClient extends AbstractScriptedSimpleTest {
 
 	private Manager bmStub = null;
-
+	private static final String _ManagerStubName = "Manager";
 	public static void main(String[] args) throws Exception {
 //		System.setProperty("java.rmi.server.hostname", "localhost");
 		BookingClient client = new BookingClient();
@@ -27,7 +27,7 @@ public class BookingClient extends AbstractScriptedSimpleTest {
 			//Look up the registered remote instance
 //			bm = new BookingManager();
 			Registry registry = LocateRegistry.getRegistry();
-			bmStub = (Manager) registry.lookup("Manager");
+			bmStub = (Manager) registry.lookup(_ManagerStubName);
 		} catch (Exception exp) {
 			exp.printStackTrace();
 		}
