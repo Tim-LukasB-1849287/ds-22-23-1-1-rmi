@@ -7,10 +7,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -19,6 +16,8 @@ public class BookingManager implements Manager {
     private Room[] rooms;
     private static final String _ServerStubName = "Manager";
     private static final Logger logger = Logger.getLogger(BookingManager.class.getName());
+
+    private Map<Integer, Object> locks = new HashMap<>(); // todo ConcurrentHashMap & remove unused locks
 
     public BookingManager() {
         this.rooms = initializeRooms();
@@ -52,16 +51,25 @@ public class BookingManager implements Manager {
         Integer roomNum = bookingDetail.getRoomNumber();
         logger.log(Level.INFO, "Adding a booking for room with number {0}", new Object[]{roomNum});
         Iterable<Room> roomIterator = Arrays.asList(rooms);
-        for (Room room : roomIterator) {
-            if (room.getRoomNumber().equals(roomNum)) {
-                if (room.isAvailable(bookingDetail.getDate())) {
-                    List<BookingDetail> bookings = room.getBookings();
-                    bookings.add(bookingDetail);
-                    room.setBookings(bookings);
-                } else {
-                    throw new RoomUnavailableException(String.format("Room  with number %d is not available", room.getRoomNumber()));
+
+        lockCheck(roomNum);
+        String consoleData = " roomNum " + roomNum + ", date: " + bookingDetail.getDate() + ", object:" + getLock(roomNum)+"\n";
+
+        synchronized (getLock(roomNum)) { // prevents concurrent bookings for the same roomNr
+            logger.log(Level.INFO,"--> Entered critical section for" + consoleData);
+            for (Room room : roomIterator) {
+                if (room.getRoomNumber().equals(roomNum)) {
+                    if (room.isAvailable(bookingDetail.getDate())) {
+                        List<BookingDetail> bookings = room.getBookings();
+                        bookings.add(bookingDetail);
+                        room.setBookings(bookings);
+                    } else {
+                        logger.log(Level.INFO, "<-- Exited critical section for" + consoleData);
+                        throw new RoomUnavailableException(String.format("Room  with number %d is not available", room.getRoomNumber()));
+                    }
                 }
             }
+            logger.log(Level.INFO,"<-- Exited critical section for" + consoleData);
         }
     }
 
@@ -86,6 +94,17 @@ public class BookingManager implements Manager {
         rooms[3] = new Room(203);
         return rooms;
     }
+
+    private void lockCheck(int roomNr){
+        if (!locks.containsKey(roomNr)) {
+            locks.put(roomNr, new Object());
+        }
+    }
+
+    private Object getLock(int roomNr) {
+        return locks.get(roomNr);
+    };
+
 
     public static void main(String[] args) {
         try {
